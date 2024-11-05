@@ -1,7 +1,12 @@
 import random as rand
 
-GRID_SIZE = 10
-NUM_MINES = 20
+def set_values():
+    GRID_SIZE = int(input("How large do you want the grid to be: "))
+    NUM_MINES = int(input("How many mines do you want there to be: "))
+    if NUM_MINES >= (GRID_SIZE * GRID_SIZE):
+        set_values()
+    else:
+        return GRID_SIZE, NUM_MINES
 
 def create_board():
     return [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
@@ -40,6 +45,7 @@ def print_board(board, revealed):
         print(f"{i} | {''.join(row_display)}")
 
 def play_game():
+    set_values()
     board = create_board()
     place_mines(board)
     update_numbers(board)
