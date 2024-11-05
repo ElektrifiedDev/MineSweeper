@@ -1,5 +1,10 @@
 import random as rand
 
+global GRID_SIZE
+global NUM_MINES
+
+
+
 def set_values():
     GRID_SIZE = int(input("How large do you want the grid to be: "))
     NUM_MINES = int(input("How many mines do you want there to be: "))
