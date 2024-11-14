@@ -76,5 +76,4 @@ def play_game():
             break
     input()
 
-
 play_game()
