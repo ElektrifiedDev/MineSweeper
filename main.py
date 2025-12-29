@@ -5,8 +5,24 @@ from collections import deque ## Importing deque for efficient flood fill algori
 
 init(autoreset=True) ## Initialize colorama
 
-GRID_SIZE = 10 ## Size of the Minesweeper grid
-NUM_MINES = 20 ## Number of mines to place on the grid
+# Setup game parameters
+def setup_game():
+    global GRID_SIZE, NUM_MINES
+    while True:
+        try:
+            GRID_SIZE = int(input("Enter the desired length of the Minesweeper grid: ")) ## Size of the Minesweeper grid
+            if GRID_SIZE < 5 or GRID_SIZE >= 30:
+                print("PLEASE ENTER A NUMBER BETWEEN 5 AND 30 FOR THE BEST EXPERIENCE.")
+                os.system('cls')
+                continue
+            else:
+                break
+        except ValueError:
+            print("PLEASE ENTER A VALID WHOLE NUMBER.")
+            os.system('cls')
+            continue
+    NUM_MINES = (GRID_SIZE * GRID_SIZE) // 5 ## Number of mines to place on the grid
+    return GRID_SIZE, NUM_MINES
 
 # Create the game board
 def create_board():
@@ -111,6 +127,7 @@ def flood_reveal(board, revealed, row, col):
 
 # Main game loop
 def play_game():
+    setup_game()
     board = create_board()
     place_mines(board)
     update_numbers(board)
