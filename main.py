@@ -1,6 +1,8 @@
 import random as rand
 import os
 from colorama import Fore, Style, init
+from collections import deque
+
 init(autoreset=True)
 
 GRID_SIZE = 10
@@ -72,6 +74,30 @@ def print_board(board, revealed, flagged):
                 row_display.append(color_cell("[X]"))
         print(f"{i} | {''.join(row_display)}")
 
+def flood_reveal(board, revealed, row, col):
+    queue = deque()
+    queue.append((row, col))
+    GRID = len(board)
+
+    while queue:
+        r, c = queue.popleft()
+
+        # already revealed? skip
+        if revealed[r][c]:
+            continue
+
+        revealed[r][c] = True
+
+        # only expand if this is a zero
+        if board[r][c] != "[0]":
+            continue
+
+        # check neighbors
+        for i in range(max(0, r - 1), min(GRID, r + 2)):
+            for j in range(max(0, c - 1), min(GRID, c + 2)):
+                if not revealed[i][j]:
+                    queue.append((i, j))
+
 def play_game():
     board = create_board()
     place_mines(board)
@@ -105,7 +131,10 @@ def play_game():
                 print_board(board, [[True]*GRID_SIZE for _ in range(GRID_SIZE)], flagged)
                 print("BOOM! You hit a mine. GAME OVER.")
                 break
-            revealed[row][col] = True
+            if board[row][col] == "[0]":
+                flood_reveal(board, revealed, row, col)
+            else:
+                revealed[row][col] = True
 
         elif len(user_input) == 3 and user_input[0].upper() == 'F':  # flag toggle
             try:
