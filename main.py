@@ -84,8 +84,8 @@ def color_cell(cell):
 
 # Print the current state of the board
 def print_board(board, revealed, flagged):
-    print("     " + "  ".join([str(i) for i in range(GRID_SIZE)]))
-    print("  --" + "---" * GRID_SIZE)
+    print("     " + "".join([str(i).center(3) for i in range(GRID_SIZE)]))
+    print("   --" + "---" * GRID_SIZE)
     for i, row in enumerate(board):
         row_display = []
         for j, cell in enumerate(row):
@@ -95,7 +95,7 @@ def print_board(board, revealed, flagged):
                 row_display.append(color_cell(str(cell)))
             else:
                 row_display.append(color_cell("[X]"))
-        print(f"{i} | {''.join(row_display)}")
+        print(f"{str(i).rjust(2)} | {''.join(row_display)}")
 
 # Flood fill algorithm to reveal empty cells
 def flood_reveal(board, revealed, row, col):
