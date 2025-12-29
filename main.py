@@ -1,16 +1,18 @@
-import random as rand
-import os
-from colorama import Fore, Style, init
-from collections import deque
+import random as rand ## Importing random module for mine placement
+import os ## Importing os module for clearing the console
+from colorama import Fore, Style, init ## Importing colorama for colored text output
+from collections import deque ## Importing deque for efficient flood fill algorithm
 
-init(autoreset=True)
+init(autoreset=True) ## Initialize colorama
 
-GRID_SIZE = 10
-NUM_MINES = 20
+GRID_SIZE = 10 ## Size of the Minesweeper grid
+NUM_MINES = 20 ## Number of mines to place on the grid
 
+# Create the game board
 def create_board():
     return [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 
+# Place mines randomly on the board
 def place_mines(board):
     mines = 0
     while mines < NUM_MINES:
@@ -20,7 +22,10 @@ def place_mines(board):
             board[row][col] = "[M]"
             mines += 1
 
+# Update the board with numbers indicating adjacent mines
 def update_numbers(board):
+    ## Calculates the number of adjacent mines for every non-mine cell on the board. 
+    ## Iterates through a 3x3 grid around each cell to count [M] instances.
     for row in range(GRID_SIZE):
         for col in range(GRID_SIZE):
             if board[row][col] == "[M]":
@@ -32,6 +37,7 @@ def update_numbers(board):
                         count += 1
             board[row][col] = f"[{count}]"
 
+# Color the cell based on its content
 def color_cell(cell):
     if cell == "[X]":
         return Fore.LIGHTBLACK_EX + cell + Style.RESET_ALL
@@ -60,6 +66,7 @@ def color_cell(cell):
     else:
         return cell
 
+# Print the current state of the board
 def print_board(board, revealed, flagged):
     print("     " + "  ".join([str(i) for i in range(GRID_SIZE)]))
     print("  --" + "---" * GRID_SIZE)
@@ -74,7 +81,11 @@ def print_board(board, revealed, flagged):
                 row_display.append(color_cell("[X]"))
         print(f"{i} | {''.join(row_display)}")
 
+# Flood fill algorithm to reveal empty cells
 def flood_reveal(board, revealed, row, col):
+    # An efficient flood-fill algorithm using a deque (Breadth-First Search).
+    # When a cell with [0] is revealed, it automatically expands to reveal 
+    # all connected empty cells and their immediate numbered borders.
     queue = deque()
     queue.append((row, col))
     GRID = len(board)
@@ -82,22 +93,23 @@ def flood_reveal(board, revealed, row, col):
     while queue:
         r, c = queue.popleft()
 
-        # already revealed? skip
+        # Already revealed? skip
         if revealed[r][c]:
             continue
 
         revealed[r][c] = True
 
-        # only expand if this is a zero
+        # Only expand if this is a zero
         if board[r][c] != "[0]":
             continue
 
-        # check neighbors
+        # Check neighbors
         for i in range(max(0, r - 1), min(GRID, r + 2)):
             for j in range(max(0, c - 1), min(GRID, c + 2)):
                 if not revealed[i][j]:
                     queue.append((i, j))
 
+# Main game loop
 def play_game():
     board = create_board()
     place_mines(board)
