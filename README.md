@@ -33,3 +33,5 @@ Bundled into a standalone `.exe` to ensure it can run without needing Python ins
 - **Build Environment**: Python 3.14
 - **File Size**: Approximately 8 MB
 - **Dependencies**: Built with `colorama` for terminal styling and packaged with `PyInstaller`
+
+-# This project is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** License.
