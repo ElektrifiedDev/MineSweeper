@@ -29,12 +29,12 @@ def create_board():
     return [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 
 # Place mines randomly on the board
-def place_mines(board):
+def place_mines(board, safe_row, safe_col):
     mines = 0
     while mines < NUM_MINES:
         row = rand.randint(0, GRID_SIZE - 1)
         col = rand.randint(0, GRID_SIZE - 1)
-        if board[row][col] != "[M]":
+        if board[row][col] != "[M]" and (row != safe_row or col != safe_col):
             board[row][col] = "[M]"
             mines += 1
 
@@ -129,11 +129,11 @@ def flood_reveal(board, revealed, row, col):
 def play_game():
     setup_game()
     board = create_board()
-    place_mines(board)
-    update_numbers(board)
 
     revealed = [[False for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
     flagged = [[False for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+
+    first_move = True # Track if it's the first move
 
     while True:
         os.system('cls')
@@ -186,6 +186,11 @@ def play_game():
             print("INVALID COMMAND.")
             input("Press Enter to continue...")
             continue
+
+        if first_move:
+            place_mines(board, row, col)
+            update_numbers(board)
+            first_move = False
 
         # Win condition: all non-mines revealed
         if all(
