@@ -19,6 +19,9 @@ Reveal all cells that do not contain mines to win the game. Revealing a cell tha
 
 # Key Features
 
+## Flood Revealing
+An Algorithm so that whenever a `[0]` is revealed, surrounding numbers will also be instantly revealed.
+
 ## Color-Coded Interface
 Uses `colorama` to highlight different numbers, flags and mines for better readability.
 
