@@ -8,7 +8,7 @@ This game runs directly in your Windows Command Line
 
 ## Reveal a Cell
 Type the row number and column number seperated by a space (for example: `4 9`; this would go to the Row 4 (Fifth Row) and the Column 9(Tenth Column)) to reveal a cell. 
-Note: By Default, the grid is 10x10 (from 0-9). The numerical offset is due to how digital indexing works.
+Note: The numerical offset is due to how digital indexing works.
 
 ## Flag a Cell
 Type `F` followed by the coordinates (e.g., `F 2 3`) to mark a suspected mine.
