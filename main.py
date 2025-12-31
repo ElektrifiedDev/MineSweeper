@@ -55,32 +55,20 @@ def update_numbers(board):
 
 # Color the cell based on its content
 def color_cell(cell):
-    if cell == "[X]":
-        return Fore.LIGHTBLACK_EX + cell + Style.RESET_ALL
-    elif cell == "[F]":
-        return Fore.LIGHTRED_EX + cell + Style.RESET_ALL
-    elif cell == "[M]":
-        return Fore.RED + cell + Style.RESET_ALL
-    elif cell == "[0]":
-        return Fore.WHITE + cell + Style.RESET_ALL
-    elif cell == "[1]":
-        return Fore.BLUE + cell + Style.RESET_ALL
-    elif cell == "[2]":
-        return Fore.GREEN + cell + Style.RESET_ALL
-    elif cell == "[3]":
-        return Fore.YELLOW + cell + Style.RESET_ALL
-    elif cell == "[4]":
-        return Fore.MAGENTA + cell + Style.RESET_ALL
-    elif cell == "[5]":
-        return Fore.CYAN + cell + Style.RESET_ALL
-    elif cell == "[6]":
-        return Fore.LIGHTRED_EX + cell + Style.RESET_ALL
-    elif cell == "[7]":
-        return Fore.LIGHTBLUE_EX + cell + Style.RESET_ALL
-    elif cell == "[8]":
-        return Fore.LIGHTGREEN_EX + cell + Style.RESET_ALL
-    else:
-        return cell
+    colors = {
+        "[X]": Fore.LIGHTBLACK_EX, 
+        "[F]": Fore.LIGHTRED_EX, 
+        "[M]": Fore.RED, 
+        "[0]": Fore.WHITE, 
+        "[1]": Fore.BLUE, 
+        "[2]": Fore.GREEN, 
+        "[3]": Fore.YELLOW, 
+        "[4]": Fore.MAGENTA, 
+        "[5]": Fore.CYAN, 
+        "[6]": Fore.LIGHTRED_EX,
+        "[7]": Fore.LIGHTBLUE_EX, 
+        "[8]": Fore.LIGHTGREEN_EX}
+    return colors.get(cell, "") + cell + Style.RESET_ALL
 
 # Print the current state of the board
 def print_board(board, revealed, flagged):
