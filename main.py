@@ -9,7 +9,7 @@ def setup_game():
     global GRID_SIZE, NUM_MINES
     while True:
         try:
-            GRID_SIZE = int(input("Enter grid length (5-25): "))
+            GRID_SIZE = 10 # int(input("Enter grid length (5-25): "))
             if 5 <= GRID_SIZE <= 25:
                 break
             print("PLEASE ENTER A NUMBER BETWEEN 5 AND 25.")
