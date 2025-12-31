@@ -1,47 +1,39 @@
-import random as rand ## Importing random module for mine placement
-import os ## Importing os module for clearing the console
-from colorama import Fore, Style, init ## Importing colorama for colored text output
-from collections import deque ## Importing deque for efficient flood fill algorithm
+import random as rand
+import os
+from colorama import Fore, Style, init
+from collections import deque
 
-init(autoreset=True) ## Initialize colorama
+init(autoreset=True)
 
-# Setup game parameters
 def setup_game():
     global GRID_SIZE, NUM_MINES
     while True:
         try:
-            GRID_SIZE = int(input("Enter the desired length of the Minesweeper grid: ")) ## Size of the Minesweeper grid
-            if GRID_SIZE < 5 or GRID_SIZE >= 30:
-                print("PLEASE ENTER A NUMBER BETWEEN 5 AND 30 FOR THE BEST EXPERIENCE.")
-                os.system('cls')
-                continue
-            else:
+            GRID_SIZE = int(input("Enter grid length (5-30): "))
+            if 5 <= GRID_SIZE < 30:
                 break
+            print("PLEASE ENTER A NUMBER BETWEEN 5 AND 30.")
         except ValueError:
             print("PLEASE ENTER A VALID WHOLE NUMBER.")
-            os.system('cls')
-            continue
-    NUM_MINES = (GRID_SIZE * GRID_SIZE) // 5 ## Number of mines to place on the grid
+    
+    # Standard Minesweeper difficulty is usually ~15-20% mines
+    NUM_MINES = (GRID_SIZE * GRID_SIZE) // 6 
     return GRID_SIZE, NUM_MINES
 
-# Create the game board
 def create_board():
     return [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 
-# Place mines randomly on the board
 def place_mines(board, safe_row, safe_col):
     mines = 0
     while mines < NUM_MINES:
         row = rand.randint(0, GRID_SIZE - 1)
         col = rand.randint(0, GRID_SIZE - 1)
+        # Ensure mine isn't on the first click
         if board[row][col] != "[M]" and (row != safe_row or col != safe_col):
             board[row][col] = "[M]"
             mines += 1
 
-# Update the board with numbers indicating adjacent mines
 def update_numbers(board):
-    ## Calculates the number of adjacent mines for every non-mine cell on the board. 
-    ## Iterates through a 3x3 grid around each cell to count [M] instances.
     for row in range(GRID_SIZE):
         for col in range(GRID_SIZE):
             if board[row][col] == "[M]":
@@ -53,144 +45,120 @@ def update_numbers(board):
                         count += 1
             board[row][col] = f"[{count}]"
 
-# Color the cell based on its content
 def color_cell(cell):
     colors = {
-        "[X]": Fore.LIGHTBLACK_EX, 
-        "[F]": Fore.LIGHTRED_EX, 
-        "[M]": Fore.RED, 
-        "[0]": Fore.WHITE, 
-        "[1]": Fore.BLUE, 
-        "[2]": Fore.GREEN, 
-        "[3]": Fore.YELLOW, 
-        "[4]": Fore.MAGENTA, 
-        "[5]": Fore.CYAN, 
-        "[6]": Fore.LIGHTRED_EX,
-        "[7]": Fore.LIGHTBLUE_EX, 
-        "[8]": Fore.LIGHTGREEN_EX}
+        "[X]": Fore.LIGHTBLACK_EX, "[F]": Fore.LIGHTRED_EX, "[M]": Fore.RED,
+        "[0]": Fore.WHITE, "[1]": Fore.BLUE, "[2]": Fore.GREEN,
+        "[3]": Fore.YELLOW, "[4]": Fore.MAGENTA, "[5]": Fore.CYAN,
+        "[6]": Fore.LIGHTRED_EX, "[7]": Fore.LIGHTBLUE_EX, "[8]": Fore.LIGHTGREEN_EX
+    }
     return colors.get(cell, "") + cell + Style.RESET_ALL
 
-# Print the current state of the board
-def print_board(board, revealed, flagged):
+def print_board(board, revealed, flagged, mines_left):
+    # Header showing remaining mines
+    print(f"\n   MINES REMAINING: {mines_left}")
     print("     " + "".join([str(i).center(3) for i in range(GRID_SIZE)]))
     print("   --" + "---" * GRID_SIZE)
     for i, row in enumerate(board):
         row_display = []
         for j, cell in enumerate(row):
             if flagged[i][j]:
-                row_display.append(color_cell(str("[F]")))
+                row_display.append(color_cell("[F]"))
             elif revealed[i][j]:
                 row_display.append(color_cell(str(cell)))
             else:
                 row_display.append(color_cell("[X]"))
         print(f"{str(i).rjust(2)} | {''.join(row_display)}")
 
-# Flood fill algorithm to reveal empty cells
 def flood_reveal(board, revealed, row, col):
-    # An efficient flood-fill algorithm using a deque (Breadth-First Search).
-    # When a cell with [0] is revealed, it automatically expands to reveal 
-    # all connected empty cells and their immediate numbered borders.
-    queue = deque()
-    queue.append((row, col))
-    GRID = len(board)
-
+    queue = deque([(row, col)])
     while queue:
         r, c = queue.popleft()
-
-        # Already revealed? skip
-        if revealed[r][c]:
-            continue
-
+        if revealed[r][c]: continue
         revealed[r][c] = True
+        if board[r][c] == "[0]":
+            for i in range(max(0, r - 1), min(GRID_SIZE, r + 2)):
+                for j in range(max(0, c - 1), min(GRID_SIZE, c + 2)):
+                    if not revealed[i][j]:
+                        queue.append((i, j))
 
-        # Only expand if this is a zero
-        if board[r][c] != "[0]":
-            continue
-
-        # Check neighbors
-        for i in range(max(0, r - 1), min(GRID, r + 2)):
-            for j in range(max(0, c - 1), min(GRID, c + 2)):
-                if not revealed[i][j]:
-                    queue.append((i, j))
-
-# Main game loop
 def play_game():
     setup_game()
     board = create_board()
-
     revealed = [[False for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
     flagged = [[False for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
-
-    first_move = True # Track if it's the first move
+    
+    first_move = True
+    flags_placed = 0
 
     while True:
-        os.system('cls')
-        print_board(board, revealed, flagged)
-        user_input = input("Enter row and column to reveal, or 'F row col' to flag: ").split()
+        os.system('cls' if os.name == 'nt' else 'clear')
+        mines_left = NUM_MINES - flags_placed
+        print_board(board, revealed, flagged, mines_left)
+        
+        user_input = input("\n'r c' to reveal | 'F r c' to flag: ").split()
 
-        if len(user_input) == 2:  # reveal
-            try:
-                row, col = map(int, user_input)
-            except ValueError:
-                print("INVALID INPUT. PLEASE ENTER 2 NUMBERS OR USE 'F row col'.")
-                input("Press Enter to continue...")
-                continue
-            if row < 0 or row >= GRID_SIZE or col < 0 or col >= GRID_SIZE:
-                print("INVALID CO-ORDINATES. TRY AGAIN.")
-                input("Press Enter to continue...")
-                continue
-            if flagged[row][col]:
-                print("You can't reveal a flagged cell. Unflag it first.")
-                input("Press Enter to continue...")
-                continue
-            if board[row][col] == "[M]":
-                os.system('cls')
-                print_board(board, [[True]*GRID_SIZE for _ in range(GRID_SIZE)], flagged)
-                print("BOOM! You hit a mine. GAME OVER.")
-                break
-            if board[row][col] == "[0]":
-                flood_reveal(board, revealed, row, col)
-            else:
-                revealed[row][col] = True
+        if not user_input: continue
 
-        elif len(user_input) == 3 and user_input[0].upper() == 'F':  # flag toggle
+        # FLAG LOGIC
+        if user_input[0].upper() == 'F' and len(user_input) == 3:
             try:
                 row, col = map(int, user_input[1:])
-            except ValueError:
-                print("INVALID INPUT. PLEASE ENTER 'F row col'.")
-                input("Press Enter to continue...")
-                continue
-            if row < 0 or row >= GRID_SIZE or col < 0 or col >= GRID_SIZE:
-                print("INVALID CO-ORDINATES. TRY AGAIN.")
-                input("Press Enter to continue...")
-                continue
-            if revealed[row][col]:
-                print("You can't flag a revealed cell.")
-                input("Press Enter to continue...")
-                continue
-            flagged[row][col] = not flagged[row][col]
-
-        else:
-            print("INVALID COMMAND.")
-            input("Press Enter to continue...")
+                if not revealed[row][col]:
+                    if flagged[row][col]:
+                        flagged[row][col] = False
+                        flags_placed -= 1
+                    else:
+                        if flags_placed < NUM_MINES: # FLAG LIMIT
+                            flagged[row][col] = True
+                            flags_placed += 1
+                        else:
+                            input("OUT OF FLAGS! Unflag another square first.")
+            except (ValueError, IndexError):
+                input("Invalid input. Press Enter...")
             continue
 
-        if first_move:
-            place_mines(board, row, col)
-            update_numbers(board)
-            first_move = False
+        # REVEAL LOGIC
+        try:
+            row, col = map(int, user_input)
+            if flagged[row][col]:
+                input("Cell is flagged! Unflag it first.")
+                continue
+            
+            if first_move:
+                place_mines(board, row, col)
+                update_numbers(board)
+                first_move = False
+            
+            if board[row][col] == "[M]":
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print_board(board, [[True]*GRID_SIZE for _ in range(GRID_SIZE)], flagged, 0)
+                print(Fore.RED + "BOOM! GAME OVER.")
+                break
+                
+            flood_reveal(board, revealed, row, col)
+        except (ValueError, IndexError):
+            input("Invalid input. Press Enter...")
+            continue
 
-        # Win condition: all non-mines revealed
-        if all(
+        # WIN CONDITION: Correct flags + all safe tiles revealed
+        safe_tiles_revealed = all(
             revealed[r][c] or board[r][c] == "[M]"
-            for r in range(GRID_SIZE)
-            for c in range(GRID_SIZE)
-        ):
-            os.system('cls')
-            print_board(board, revealed, flagged)
-            print("Congratulations, You Beat The Board!")
+            for r in range(GRID_SIZE) for c in range(GRID_SIZE)
+        )
+        
+        # Optional: Add "Flag Validation" check to win condition
+        # This checks if all flags placed are actually on mines
+        correct_flags = sum(1 for r in range(GRID_SIZE) for c in range(GRID_SIZE) 
+                           if flagged[r][c] and board[r][c] == "[M]")
+
+        if safe_tiles_revealed and correct_flags == NUM_MINES:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print_board(board, revealed, flagged, 0)
+            print(Fore.GREEN + "CONGRATULATIONS! BOARD CLEARED.")
             break
 
-    input()
+    input("\nPress Enter to exit...")
 
-play_game()
+if __name__ == "__main__":
+    play_game()
