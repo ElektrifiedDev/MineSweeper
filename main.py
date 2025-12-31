@@ -16,8 +16,7 @@ def setup_game():
         except ValueError:
             print("PLEASE ENTER A VALID WHOLE NUMBER.")
     
-    # Standard Minesweeper difficulty is usually ~15-20% mines
-    NUM_MINES = (GRID_SIZE * GRID_SIZE) // 6 
+    NUM_MINES = (GRID_SIZE * GRID_SIZE) // 5
     return GRID_SIZE, NUM_MINES
 
 def create_board():
@@ -28,7 +27,6 @@ def place_mines(board, safe_row, safe_col):
     while mines < NUM_MINES:
         row = rand.randint(0, GRID_SIZE - 1)
         col = rand.randint(0, GRID_SIZE - 1)
-        # Ensure mine isn't on the first click
         if board[row][col] != "[M]" and (row != safe_row or col != safe_col):
             board[row][col] = "[M]"
             mines += 1
@@ -55,7 +53,6 @@ def color_cell(cell):
     return colors.get(cell, "") + cell + Style.RESET_ALL
 
 def print_board(board, revealed, flagged, mines_left):
-    # Header showing remaining mines
     print(f"\n   MINES REMAINING: {mines_left}")
     print("     " + "".join([str(i).center(3) for i in range(GRID_SIZE)]))
     print("   --" + "---" * GRID_SIZE)
@@ -100,7 +97,6 @@ def play_game():
 
         if not user_input: continue
 
-        # FLAG LOGIC
         if user_input[0].upper() == 'F' and len(user_input) == 3:
             try:
                 row, col = map(int, user_input[1:])
@@ -109,7 +105,7 @@ def play_game():
                         flagged[row][col] = False
                         flags_placed -= 1
                     else:
-                        if flags_placed < NUM_MINES: # FLAG LIMIT
+                        if flags_placed < NUM_MINES:
                             flagged[row][col] = True
                             flags_placed += 1
                         else:
@@ -118,7 +114,6 @@ def play_game():
                 input("Invalid input. Press Enter...")
             continue
 
-        # REVEAL LOGIC
         try:
             row, col = map(int, user_input)
             if flagged[row][col]:
@@ -141,14 +136,11 @@ def play_game():
             input("Invalid input. Press Enter...")
             continue
 
-        # WIN CONDITION: Correct flags + all safe tiles revealed
         safe_tiles_revealed = all(
             revealed[r][c] or board[r][c] == "[M]"
             for r in range(GRID_SIZE) for c in range(GRID_SIZE)
         )
         
-        # Optional: Add "Flag Validation" check to win condition
-        # This checks if all flags placed are actually on mines
         correct_flags = sum(1 for r in range(GRID_SIZE) for c in range(GRID_SIZE) 
                            if flagged[r][c] and board[r][c] == "[M]")
 
