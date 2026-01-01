@@ -13,6 +13,7 @@ venv/
 .env/
 .venv/
 env/
+minesweeper-build/
 
 # IDE files
 .vscode/
