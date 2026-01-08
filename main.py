@@ -28,7 +28,23 @@ def resize_window(board_size):
 
 # --- Game Logic Functions ---
 def board_size():
-    return 10
+    while True:
+        try:
+            size = int(input("Enter board size (5-30): "))
+            if 5 <= size <= 30:
+                return size
+            else:
+                print(Fore.RED + "Size must be between 5 and 30.")
+        except ValueError:
+            print(Fore.RED + "Invalid input. Please enter a number.")
+
+def board_difficulty():
+    while True:
+        difficulty = input("Select difficulty - Easy (E), Medium (M), Hard (H): ").upper()
+        if difficulty in ['E', 'M', 'H']:
+            return difficulty
+        else:
+            print(Fore.RED + "Invalid choice. Please select E, M, or H.")
 
 def color_cell(cell):
     colors = {
@@ -104,7 +120,9 @@ def main_menu():
 def play_game():
     main_menu()
     size = board_size()
-    num_mines = int((size ** 2) // 5)
+    difficulty = board_difficulty()
+
+    num_mines = int((size ** 2) // {'E': 8, 'M': 6.5, 'H': 5}[difficulty])
     
     # 1. Data Layers
     solution_board = update_numbers(place_mines(create_board(size), num_mines, size), size)
