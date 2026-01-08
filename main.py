@@ -172,3 +172,6 @@ def play_game():
 
     input("\nPress Enter...")
     return play_game()
+
+if __name__ == "__main__":
+    play_game()
