@@ -11,7 +11,6 @@ from colorama import Fore, Style, init
 
 init(autoreset=True)
 
-# --- Utility Functions ---
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -20,11 +19,10 @@ def resize_terminal(cols, rows):
     sys.stdout.flush()
 
 def resize_window(board_size):
-    cols = max(10, (board_size * 2) + 5)
+    cols = max(50, (board_size * 2) + 5)
     lines = max(10, board_size + 10)
     resize_terminal(cols, lines)
 
-# --- Game Logic Functions ---
 def board_size():
     while True:
         try:
@@ -102,7 +100,6 @@ def flood_reveal(board, revealed, row, col, size):
             for j in range(max(0, col - 1), min(size, col + 2)):
                 flood_reveal(board, revealed, i, j, size)
 
-# --- Main Flow ---
 def main_menu():
     while True:
         clear_console()
@@ -119,20 +116,26 @@ def play_game():
     main_menu()
     size = board_size()
     difficulty = board_difficulty()
-
     num_mines = int((size ** 2) // {'E': 8, 'M': 6.5, 'H': 5}[difficulty])
     
-    # 1. Data Layers
     board = create_board(size)
     revealed = [[False for _ in range(size)] for _ in range(size)]
     flags = [[False for _ in range(size)] for _ in range(size)]
     
     resize_window(size)
+    
     game_over = False
     first_move = True
 
+    start_time = None
+    elapsed_time = 0
+
     while not game_over:
         clear_console()
+
+        if start_time is not None:
+            elapsed_time = time.time() - start_time
+        formatted_time = str(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
         
         display_matrix = []
         cells_revealed = 0
@@ -149,11 +152,12 @@ def play_game():
             display_matrix.append(row_display)
 
         if (size * size) - cells_revealed == num_mines:
-            print(Fore.GREEN + "Winner! Field Cleared.")
+            print(Fore.GREEN + f"Winner! Field Cleared in {formatted_time}.")
             display_board(board, size)
             break
 
-        print(Fore.CYAN + f"Mines: {num_mines} | Cells revealed: {cells_revealed}\n")
+        print(Fore.CYAN + f"Mines: {num_mines} | Safe cells revealed: {cells_revealed}/{(size*size - num_mines)}")
+        print(Fore.CYAN + f"Time Elapsed: {formatted_time}\n")
         display_board(display_matrix, size)
         
         try:
@@ -171,6 +175,7 @@ def play_game():
             if first_move:
                 board = place_mines(board, num_mines, size, r, c)
                 board = update_numbers(board, size)
+                start_time = time.time()
                 first_move = False
 
             if flags[r][c]:
