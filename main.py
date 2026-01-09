@@ -56,12 +56,12 @@ def color_cell(cell):
 def create_board(size):
     return [[0 for _ in range(size)] for _ in range(size)]
 
-def place_mines(board, num_mines, size):
+def place_mines(board, num_mines, size, safe_row, safe_col):
     mines = 0
     while mines < num_mines:
         row = rand.randint(0, size - 1)
         col = rand.randint(0, size - 1)
-        if board[row][col] != "[M]":
+        if board[row][col] != "[M]" and (row != safe_row and col != safe_col):
             board[row][col] = "[M]"
             mines += 1
     return board
@@ -123,24 +123,24 @@ def play_game():
     num_mines = int((size ** 2) // {'E': 8, 'M': 6.5, 'H': 5}[difficulty])
     
     # 1. Data Layers
-    solution_board = update_numbers(place_mines(create_board(size), num_mines, size), size)
+    board = create_board(size)
     revealed = [[False for _ in range(size)] for _ in range(size)]
     flags = [[False for _ in range(size)] for _ in range(size)]
     
     resize_window(size)
     game_over = False
+    first_move = True
 
     while not game_over:
         clear_console()
         
-        # 2. Build the display board on the fly
         display_matrix = []
         cells_revealed = 0
         for r in range(size):
             row_display = []
             for c in range(size):
                 if revealed[r][c]:
-                    row_display.append(solution_board[r][c])
+                    row_display.append(board[r][c])
                     cells_revealed += 1
                 elif flags[r][c]:
                     row_display.append("[F]")
@@ -148,18 +148,16 @@ def play_game():
                     row_display.append("[X]")
             display_matrix.append(row_display)
 
-        # 3. Check Win Condition
-        # Win if: Total cells - Revealed cells == Number of mines
         if (size * size) - cells_revealed == num_mines:
             print(Fore.GREEN + "Winner! Field Cleared.")
-            display_board(solution_board, size)
+            display_board(board, size)
             break
 
         print(Fore.CYAN + f"Mines: {num_mines} | Cells revealed: {cells_revealed}\n")
         display_board(display_matrix, size)
         
         try:
-            move = input("\nEnter (r c) or (f r c): ").lower().split()
+            move = input("\nEnter (r c) or (f r c): ").lower().strip().split()
             if not move: continue
             
             if move[0] == 'f':
@@ -170,17 +168,21 @@ def play_game():
             
             r, c = int(move[0]), int(move[1])
 
-            # 4. Handle Move
+            if first_move:
+                board = place_mines(board, num_mines, size, r, c)
+                board = update_numbers(board, size)
+                first_move = False
+
             if flags[r][c]:
                 print(Fore.YELLOW + "Cell is flagged! Unflag it first.")
                 time.sleep(1)
-            elif solution_board[r][c] == "[M]":
+            elif board[r][c] == "[M]":
                 clear_console()
                 print(Fore.RED + "BOOM!")
-                display_board(solution_board, size)
+                display_board(board, size)
                 game_over = True
             else:
-                flood_reveal(solution_board, revealed, r, c, size)
+                flood_reveal(board, revealed, r, c, size)
 
         except (ValueError, IndexError):
             print(Fore.RED + "Invalid input.")
