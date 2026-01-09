@@ -1,5 +1,4 @@
 import random as rand
-import collections
 import os
 import json
 import sys
@@ -9,7 +8,6 @@ import colorama
 import hashlib
 
 from colorama import Fore, Style, init
-from collections import deque
 
 init(autoreset=True)
 
@@ -22,7 +20,7 @@ def resize_terminal(cols, rows):
     sys.stdout.flush()
 
 def resize_window(board_size):
-    cols = max(50, (board_size * 4) + 12)
+    cols = max(10, (board_size * 2) + 5)
     lines = max(10, board_size + 10)
     resize_terminal(cols, lines)
 
@@ -30,11 +28,11 @@ def resize_window(board_size):
 def board_size():
     while True:
         try:
-            size = int(input("Enter board size (5-30): "))
-            if 5 <= size <= 30:
+            size = int(input("Enter board size (5-20): "))
+            if 5 <= size <= 20:
                 return size
             else:
-                print(Fore.RED + "Size must be between 5 and 30.")
+                print(Fore.RED + "Size must be between 5 and 20.")
         except ValueError:
             print(Fore.RED + "Invalid input. Please enter a number.")
 
