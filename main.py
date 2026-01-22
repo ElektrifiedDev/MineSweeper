@@ -42,6 +42,18 @@ def board_difficulty():
         else:
             print(Fore.RED + "Invalid choice. Please select E, M, or H.")
 
+def board_seed():
+    seed_input = input("Enter a Seed (Leave blank for random): ").strip()
+
+    if seed_input == "":
+        current_seed = str(int(time.time()))
+    else:
+        current_seed = seed_input
+
+    hashed_seed = hashlib.sha256(current_seed.encode()).hexdigest()[:8]
+    rand.seed(hashed_seed)
+    return hashed_seed, seed_input if seed_input != "" else current_seed
+
 def color_cell(cell):
     colors = {
         "[X]": Fore.LIGHTBLACK_EX, "[F]": Fore.LIGHTRED_EX, "[M]": Fore.RED,
@@ -117,6 +129,8 @@ def play_game():
     size = board_size()
     difficulty = board_difficulty()
     num_mines = int((size ** 2) // {'E': 8, 'M': 6.5, 'H': 5}[difficulty])
+
+    hashed_seed, input_seed = board_seed()
     
     board = create_board(size)
     revealed = [[False for _ in range(size)] for _ in range(size)]
@@ -158,6 +172,7 @@ def play_game():
 
         print(Fore.CYAN + f"Mines: {num_mines} | Safe cells revealed: {cells_revealed}/{(size*size - num_mines)}")
         print(Fore.CYAN + f"Time Elapsed: {formatted_time}\n")
+        print(Fore.CYAN + f"Seed: {input_seed} (Hash: {hashed_seed})\n")
         display_board(display_matrix, size)
         
         try:
